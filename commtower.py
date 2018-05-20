@@ -109,7 +109,7 @@ def remove_overlap(towerPlot, totalPlot):
            "Tower input not a numpy array"
     assert isinstance(totalPlot, np.ndarray), \
            "Pre-existing plot input not a numpy array"
-    assert bool(towerPlot.shape == totalPlot.shape) \
+    assert bool(towerPlot.shape == totalPlot.shape), \
            "Inputs must be the same dimensions"
     #assert Figure out a way to check if everything is 1 or 0
     
