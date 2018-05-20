@@ -145,22 +145,54 @@ def remove_overlap(towerPlot, totalPlot):
     return layerPlot
 
 
-def trim_coverage(newCover)
+def trim_coverage(coverPlot):
     '''
     From a plot of signal coverage, find the largest rectangular range
     within that coverage.
     
-    :@param newCover: numpy array, 1 represents coverage; 0 is none
-    :@return: numpy array, largest rectangle inside of newCover
+    :@param coverPlot: numpy array, 1 represents coverage; 0 is none
+    :@return: numpy array, largest rectangle inside of coverPlot
     '''
     import numpy as np
     
-    assert isinstance(newCover, np.ndarray), \
+    assert isinstance(coverPlot, np.ndarray), \
            "New coverage input must be a numpy array"
+    for coord in np.nditer(coverPlot):#loop thorugh each element
+        assert bool(coord == 0 or coord == 1), \
+               "Coverage input array may only contain 0s or 1s"
     
-    
-    
-    
+    def collect_slices(plotSlice):
+        '''
+        Takes in a slice from the coverage plot and identifies where in
+        that slice there is coverage
+        
+        :@param plotSlice: numpy array, a 1-D slice from coverage plot
+        :@return: list of tuples describing where there is coverage
+        '''
+        prevElement = 0 #tracks value of element in previous index
+        foundRanges = [] #stores tuples for elements found
+        start = 0 #start coordinate of a coverage range
+        
+        for i in range( len(plotSlice) ): #loop over the slice
+            if plotSlice[i] == 1 and prevElement == 0:
+            #When it first runs into a 1 / enters range of coverage
+                start = i #set the start coordinate
+            elif plotSlice[i] == 0 and prevElement == 1:
+            #When it exits a range of coverage (first encounters a 0)
+                foundRanges.append((start, i - 1))
+                #adds the range found to the list of ranges
+            else:
+                pass #do nothing if not at a coverage boundary
+            
+            if plotSlice[i] == 1 and i == len(plotSlice) -1:
+            #if it reaches the end of the array on a 1
+                foundRanges.append((start, i))
+                #append to the list since there is no next value
+            else:
+                pass
+            prevElement = plotSlice[i] #store this for the next loop
+        
+        return foundRanges #give back the tuples describing the ranges
     
     
     
