@@ -111,7 +111,12 @@ def remove_overlap(towerPlot, totalPlot):
            "Pre-existing plot input not a numpy array"
     assert bool(towerPlot.shape == totalPlot.shape), \
            "Inputs must be the same dimensions"
-    #assert Figure out a way to check if everything is 1 or 0
+    for coord in np.nditer(towerPlot):#loop thorugh each element
+        assert bool(coord == 0 or coord == 1), \
+               "Tower input array may only contain 0s or 1s"
+    for coord in np.nditer(totalPlot): #loop thorugh each element
+        assert bool(coord == 0 or coord == 1), \
+               "Tower input array may only contain 0s or 1s"
     
     if np.array_equal(totalPlot, np.zeros( totalPlot.shape )):
         #compares input to same-dimension array of zeros
@@ -138,3 +143,50 @@ def remove_overlap(towerPlot, totalPlot):
     assert bool( layerPlot.shape == totalPlot.shape)
     #check that the dimensions haven't changed
     return layerPlot
+
+
+def trim_coverage(newCover)
+    '''
+    From a plot of signal coverage, find the largest rectangular range
+    within that coverage.
+    
+    :@param newCover: numpy array, 1 represents coverage; 0 is none
+    :@return: numpy array, largest rectangle inside of newCover
+    '''
+    import numpy as np
+    
+    assert isinstance(newCover, np.ndarray), \
+           "New coverage input must be a numpy array"
+    
+    
+    
+    
+    
+    
+    
+
+class rectangle:
+    '''
+    An object which describes a rectangle by the upper and lower bounds
+    of its vertical and horizontal dimensions, inclusive.
+    
+    A way to intuitively manipulate rectangles to make the
+    trimming by largest area process easier to handle.
+    '''
+    
+    def __init__(self, firstRow, lastRow, leftCol, rightCol):
+    #r for rows; c for columns; 1 for lower and 2 for upper bounds
+        assert bool(firstRow <= lastRow), \
+               "Row locations should be in increasing order"
+        assert bool(leftCol <= rightCol), \
+               "Column locations should be in increasing order"
+        self.r1 = firstRow
+        self.r2 = lastRow
+        self.c1 = leftCol
+        self.c2 = rightCol
+        self.lrange = (firstRow, lastRow)
+        self.wrange = (leftCol, rightCol)
+        self.length = lastRow - firstRow + 1
+        self.width = rightCol - leftCol + 1
+    
+    def __add__(rect1, rect2):
