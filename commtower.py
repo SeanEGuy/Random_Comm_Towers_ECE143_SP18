@@ -59,17 +59,32 @@ def make_random_tower(plotArray)
     
     L, W = plotArray.shape #save row number as L and cols as W
     
-    rWidth = list( np.random.randint(0, W, 2) )
-    rLength = list( np.random.randint(0, L, 2) )
-    #picks two values per dimension to determine length an width
-    rWidth.sort()
-    rLength.sort()
+    rectW = list( np.random.randint(0, W, 2) )
+    rectL = list( np.random.randint(0, L, 2) )
+    #picks two values per dimension, determines coverage length & width
+    rectW.sort()
+    rectL.sort()
     #sort coordinates in an increasing order
     
-    rDimensions = tuple( rLength + rWidth )
+    rectRange = tuple( rLength + rWidth )
     #Combine coords in pattern of (x1, x2, y1, y2)
     assert bool(len(rDimensions) == 4) #Checking shape of output
     
+    rectPlot = plotArray * 0 #zero int array of same dimensions
+    
+    iterPlot = np.nditer(coverPlot, flags=['multi_index'], op_flags=['writeonly'])
+    #Make iterable version of input plot array
+    #Flag args provide multiple indices and permits writing in data
+    while not iterPlot.finished: #loop through each element in array
+        i,j = iterPlot.multi_index #save indices in i & j
+        if rectRange[0] <= i <= rectRange[1] \
+            and rectRange[2] <= j <= rectRange[3]:
+            #testing for each position if in tower coverage
+            iterPlot[0] = 1 #If in range, change value to a one
+        iterPlot.iternext() #moves to next element in array
+    
+    assert bool(rectPlot.shape == plotArray.shape)
+    #final array output should be the same shape as the input
     return rDimensions
 
     
