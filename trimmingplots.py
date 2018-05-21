@@ -44,7 +44,7 @@ def get_largest_rectangle(inPlot):
     
     rectList = [] #store tuples representing rectangles
     
-    def sweep_from_corner(inPlot, r1, c1,transposed=False):
+    def sweep_from_corner(thePlot, r1, c1,transposed=False):
         '''
         Given a starting point, generate one rectangle sweeping right
         then down and another sweeping down then right until they reach
@@ -56,38 +56,34 @@ def get_largest_rectangle(inPlot):
         :@param transposed: bool, whether the input was transposed
         '''
         
-        length, width = inPlot.shape #dimensions as easy to read vars
+        length, width = thePlot.shape #dimensions as easy to read vars
         c2 = c1 #last column is called; can increase from here
         r2 = r1 #last row is called; can increase from here
         
         for i in range(c1, width):
         #loop through column c1 to the right
-            if inPlot[r1][i] == 1 and i > width - 1:
-                pass #keep going until zero or end is reached
+            if thePlot[r1][i] == 1:
+                c2 = i #assign column 2 as last successful column
             else:
-                c2 = i #assign column 2 as last column
                 break #done once c2 is assigned
         
         for j in range(r1, length):
         #loop thorugh each row
-            if 0 in inPlot[j][c1:c2]:
+            if 0 not in thePlot[j][c1:c2+1]:
             #check for zeros in each row; the first should never fail
-                c2 = j - 1 #save the index of last successful row
+                r2 = j #save the index of last successful row
+            else: #Do nothing for rows with 1
                 break
-            elif j == length - 1:
-                c2 = j #just save last row if it goes to the end
-            else: #Do nothing for other 1 locations
-                pass
         
-        outPlot = inPlot * 0 #new plot to add the new rectangle
+        outPlot = thePlot * 0 #new plot to add the new rectangle
         iterOut = np.nditer(outPlot, \
                   flags=['multi_index'], op_flags=['writeonly'])
         #iterate over each element and apply 1s in rectange range
         while not iterOut.finished:
-            i,j = iterOut.index
-            if r1 <= i <= r2 and c1 <= j <= c2:
+            k,l = iterOut.multi_index
+            if r1 <= k <= r2 and c1 <= l <= c2:
             #check if indices in range of r1-r2 & c1-c2
-                iterOut[0] == 1 #change to 1 if in coverage
+                iterOut[0] = 1 #change to 1 if in coverage
             else:
                 pass
             iterOut.iternext()
@@ -101,7 +97,7 @@ def get_largest_rectangle(inPlot):
     #make an iterable for inPlot with indices available
     while not itPlot.finished:
         if itPlot[0] == 1:
-            i,j = itPlot.index
+            i,j = itPlot.multi_index
             rectList.append( sweep_from_corner(inPlot, i, j) )
             #making largest rectangle by going right then down
             rectList.append( \
@@ -124,9 +120,9 @@ def get_largest_rectangle(inPlot):
             allLargest.append(bigRect) #list it if it's just as big
         else:
             pass
-    randRect = largestRect[ np.random.randint(0,len(allLargest)) ]
+    randRect = allLargest[ np.random.randint(0,len(allLargest)) ]
     #pick a random rectangle from the list to limit bias
     
-    assert bool(randRect.shape == inPlot.shape)
+    assert bool(randRect.shape == inPlot.shape), "%s" % (randRect)
     #end result should still be the same dimensions as the start
     return randRect
