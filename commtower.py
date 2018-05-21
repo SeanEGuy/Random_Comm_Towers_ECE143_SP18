@@ -148,99 +148,101 @@ def remove_overlap(towerPlot, totalPlot):
     return layerPlot
 
 
-'''
-def trim_coverage(coverPlot):
+def get_largest_rectangle(inPlot):
     '''
-    From a plot of signal coverage, find the largest rectangular range
-    within that coverage.
+    Makes candidate rectangles inside of the input plot where coverage
+    is indicated. Finds and returns the largest one. Note that the
+    coverage has already been trimmed for overlap with pre-existing
+    towers.
     
-    :@param coverPlot: numpy array, 1 represents coverage; 0 is none
-    :@return: numpy array, largest rectangle inside of coverPlot
+    :@param inPlot: ndarray, original non-overlapping coverage
+    :@return: ndarray, larest rectangular coverage from inPlot
     '''
     import numpy as np
     
-    assert isinstance(coverPlot, np.ndarray), \
-           "New coverage input must be a numpy array"
-    for coord in np.nditer(coverPlot):#loop thorugh each element
-        assert bool(coord == 0 or coord == 1), \
-               "Coverage input array may only contain 0s or 1s"
+    #asserts go here
     
-    def collect_ranges(plotSlice):
+    rectList = [] #store tuples representing rectangles
+    
+    def sweep_from_corner(thePlot, r1, c1,transposed=False):
         '''
-        Takes in a slice from the coverage plot and identifies where in
-        that slice there is coverage
+        Given a starting point, generate one rectangle sweeping right
+        then down and another sweeping down then right until they reach
+        the boundary of coverage.
         
-        :@param plotSlice: numpy array, a 1-D slice from coverage plot
-        :@return: list of tuples describing where there is coverage
+        :@param inPlot: ndarray, original non-overlapping coverage
+        :@param r1: int, row index to start from
+        :@param c1: int, col index to start from
+        :@param transposed: bool, whether the input was transposed
         '''
-        prevElement = 0 #tracks value of element in previous index
-        foundRanges = [] #stores tuples for elements found
-        start = 0 #start coordinate of a coverage range
         
-        for i in range( len(plotSlice) ): #loop over the slice
-            if plotSlice[i] == 1 and prevElement == 0:
-            #When it first runs into a 1 / enters range of coverage
-                start = i #set the start coordinate
-            elif plotSlice[i] == 0 and prevElement == 1:
-            #When it exits a range of coverage (first encounters a 0)
-                foundRanges.append((start, i - 1))
-                #adds the range found to the list of ranges
+        length, width = thePlot.shape #dimensions as easy to read vars
+        c2 = c1 #last column is called; can increase from here
+        r2 = r1 #last row is called; can increase from here
+        
+        for i in range(c1, width):
+        #loop through column c1 to the right
+            if thePlot[r1][i] == 1:
+                c2 = i #assign column 2 as last successful column
             else:
-                pass #do nothing if not at a coverage boundary
-            
-            if plotSlice[i] == 1 and i == len(plotSlice) -1:
-            #if it reaches the end of the array on a 1
-                foundRanges.append([start, i])
-                #append to the list since there is no next value
+                break #done once c2 is assigned
+        
+        for j in range(r1, length):
+        #loop thorugh each row
+            if 0 not in thePlot[j][c1:c2+1]:
+            #check for zeros in each row; the first should never fail
+                r2 = j #save the index of last successful row
+            else: #Do nothing for rows with 1
+                break
+        
+        outPlot = thePlot * 0 #new plot to add the new rectangle
+        iterOut = np.nditer(outPlot, \
+                  flags=['multi_index'], op_flags=['writeonly'])
+        #iterate over each element and apply 1s in rectange range
+        while not iterOut.finished:
+            k,l = iterOut.multi_index
+            if r1 <= k <= r2 and c1 <= l <= c2:
+            #check if indices in range of r1-r2 & c1-c2
+                iterOut[0] = 1 #change to 1 if in coverage
             else:
                 pass
-            prevElement = plotSlice[i] #store this for the next loop
+            iterOut.iternext()
         
-        return foundRanges #give back the tuples describing the ranges
+        if transposed == True:
+            return np.transpose(outPlot)
+        else:
+            return outPlot
     
-    rowSlices = np.apply_along_axis(collect_ranges, 0, coverPlot)
-    colSlices = np.apply_along_axis(collect_ranges, 1, coverPlot)
-    #apply collect_ranges() to each row and column of the plot
-    #is 1-D array; each element is a list of coverage areas per slice
+    itPlot = np.nditer(inPlot, flags=['multi_index'])
+    #make an iterable for inPlot with indices available
+    while not itPlot.finished:
+        if itPlot[0] == 1:
+            i,j = itPlot.multi_index
+            rectList.append( sweep_from_corner(inPlot, i, j) )
+            #making largest rectangle by going right then down
+            rectList.append( \
+            sweep_from_corner(np.transpose(inPlot), j, i, True) )
+            #biggest rectangle sweeping down the right
+            #done by transposing the array at the start and end
+        itPlot.iternext()
     
-    #rowRect = {}
-    #colRect = {}
+    #rectList should now have all the largest rectangles in coverage
+    largestRect = max(rectList, key=lambda rarray: np.sum(rarray))
+    #finding the largest rectangles by taking the sum of each array
+    assert bool(np.sum(largestRect) <= np.sum(inPlot))
+    #largest trim shouldn't be greater than the original coverage
     
-
-
-    def combine_slices(slices):
-        '''
-        Finds the rectangles from a set of tuples that describe 
-        '''
-        for i, slice in enumerate(rowSlices): #loop over rows
-            for j in len(row)
-        return
+    allLargest = [largestRect]
+    #listing all of the largest rectangles in case of ties
+    for bigRect in rectList:
+        if np.sum(bigRect) == np.sum(largestRect):
+        #compare coverage areas
+            allLargest.append(bigRect) #list it if it's just as big
+        else:
+            pass
+    randRect = allLargest[ np.random.randint(0,len(allLargest)) ]
+    #pick a random rectangle from the list to limit bias
     
-    return biggestPlot
-
-class rectangle:
-    '''
-    An object which describes a rectangle by the upper and lower bounds
-    of its vertical and horizontal dimensions, inclusive.
-    
-    A way to intuitively manipulate rectangles to make the
-    trimming by largest area process easier to handle.
-    '''
-    
-    def __init__(self, firstRow, lastRow, leftCol, rightCol):
-    #r for rows; c for columns; 1 for lower and 2 for upper bounds
-        assert bool(firstRow <= lastRow), \
-               "Row locations should be in increasing order"
-        assert bool(leftCol <= rightCol), \
-               "Column locations should be in increasing order"
-        self.r1 = firstRow
-        self.r2 = lastRow
-        self.c1 = leftCol
-        self.c2 = rightCol
-        self.lrange = (firstRow, lastRow)
-        self.wrange = (leftCol, rightCol)
-        self.length = lastRow - firstRow + 1
-        self.width = rightCol - leftCol + 1
-    
-    def __add__(rect1, rect2):
-'''
+    assert bool(randRect.shape == inPlot.shape), "%s" % (randRect)
+    #end result should still be the same dimensions as the start
+    return randRect
