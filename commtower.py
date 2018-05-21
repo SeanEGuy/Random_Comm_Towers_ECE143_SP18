@@ -313,7 +313,7 @@ def plot_ntowers(L, W, n=0):
 
 
 
-def sample_towerToFill(L, W, n=100):
+def sample_towersToFill(L, W, n=100):
     '''
     To estimate the number of towers needed to fill a plot of land, this
     function simulates the process of filling a plot up for n
@@ -325,27 +325,20 @@ def sample_towerToFill(L, W, n=100):
     '''
     
     for funVars in [L, W, n]:
-        assert isinstance(funVars, int) and bool(l > 0), \
+        assert isinstance(funVars, int) and bool(funVars > 0), \
             "%s must be a positive integer." % (funVars)
         #All inputs must be positve integers
     
-    resultCount = {} #tower counts as keys; value is times happened
-    for i in range(n+1):
-        ntowers = plot_ntowers(L, W, n=0)
-        #simulates event; returns number of towers to fill
-        if ntowers in resultCount:
-            resultCount[ntowers] += 1
-            #adds to tally for that result
-        else:
-            resultCount[ntowers] = 1
-            #creates entry for new results
+    resultList = [] #List of tower counts from filling the plot
+    for i in range(n):
+        resultList.append( plot_ntowers(L, W, 0) )
+        #append the result of filling the plot
     
-    reCount = 0
-    for result in resultCount:
-        reCount += resultCount[result]
-        #getting total number of events captures
-    assert bool(reCount == n)
-    #checking that the desired number of simulations was captured
+    assert len(resultList) == n
+    #check that the right number of iterations was made
+    for result in resultList:
+        assert isinstance(result, int) and result > 0
+        #number of towers should be postive integer
     
-    return resultCount
+    return resultList
         

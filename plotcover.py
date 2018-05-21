@@ -14,3 +14,17 @@ def plot_oneArray(inArray):
     
     plt.show()
     plt.close()
+
+    
+def plot_towersToFill(resultList):
+    '''
+    Makes a histogram of the results from sample_towersToFill.
+    X-axis is the number of towers required to fill and the y-axis is
+    the number of instances for each result.
+    '''
+    import matplotlib.pyplot as plt
+    import numpy as np
+    
+    plt.hist(resultList)
+    plt.show()
+    plt.close()
