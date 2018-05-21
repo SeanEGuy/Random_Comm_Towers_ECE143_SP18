@@ -162,7 +162,7 @@ def get_largest_rectangle(inPlot):
     
     #asserts go here
     
-    rectList = [] #store tuples representing rectangles
+    rectList = [] #store arrays representing rectangles of coverage
     
     def sweep_from_corner(thePlot, r1, c1,transposed=False):
         '''
@@ -217,6 +217,7 @@ def get_largest_rectangle(inPlot):
     #make an iterable for inPlot with indices available
     while not itPlot.finished:
         if itPlot[0] == 1:
+        #finds each location in coverage from input
             i,j = itPlot.multi_index
             rectList.append( sweep_from_corner(inPlot, i, j) )
             #making largest rectangle by going right then down
@@ -227,6 +228,14 @@ def get_largest_rectangle(inPlot):
         itPlot.iternext()
     
     #rectList should now have all the largest rectangles in coverage
+    if len(rectList) == 0:
+        assert np.sum(inPlot) == 0, "No rectangle found:\n%s\n" % inPlot
+        #Gets empty list if input is only an array of zeros
+        return inPlot * 0
+        #returns an array of zeros if no rectangles found
+    else:
+        pass #keep going if there are rectangles
+    
     largestRect = max(rectList, key=lambda rarray: np.sum(rarray))
     #finding the largest rectangles by taking the sum of each array
     assert bool(np.sum(largestRect) <= np.sum(inPlot))
