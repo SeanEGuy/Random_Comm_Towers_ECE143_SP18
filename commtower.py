@@ -7,6 +7,7 @@ towers and calculation of their resulting coverage.
 :@funct :
 '''
 
+
 def plot_land(L, W):
     '''
     Given the dimensions, create a new plot of land that requires
@@ -40,6 +41,7 @@ def plot_land(L, W):
     emptyPlot = np.zeros((L, W), dtype='int32') #generate output array
     
     return emptyPlot
+
 
 
 def make_random_tower(plotArray):
@@ -95,6 +97,7 @@ def make_random_tower(plotArray):
     return rectPlot
 
 
+
 def remove_overlap(towerPlot, totalPlot):
     '''
     Locate where a new tower range overlaps with pre-existing coverage.
@@ -145,6 +148,7 @@ def remove_overlap(towerPlot, totalPlot):
     return layerPlot
 
 
+'''
 def trim_coverage(coverPlot):
     '''
     From a plot of signal coverage, find the largest rectangular range
@@ -161,7 +165,7 @@ def trim_coverage(coverPlot):
         assert bool(coord == 0 or coord == 1), \
                "Coverage input array may only contain 0s or 1s"
     
-    def collect_slices(plotSlice):
+    def collect_ranges(plotSlice):
         '''
         Takes in a slice from the coverage plot and identifies where in
         that slice there is coverage
@@ -186,7 +190,7 @@ def trim_coverage(coverPlot):
             
             if plotSlice[i] == 1 and i == len(plotSlice) -1:
             #if it reaches the end of the array on a 1
-                foundRanges.append((start, i))
+                foundRanges.append([start, i])
                 #append to the list since there is no next value
             else:
                 pass
@@ -194,8 +198,25 @@ def trim_coverage(coverPlot):
         
         return foundRanges #give back the tuples describing the ranges
     
+    rowSlices = np.apply_along_axis(collect_ranges, 0, coverPlot)
+    colSlices = np.apply_along_axis(collect_ranges, 1, coverPlot)
+    #apply collect_ranges() to each row and column of the plot
+    #is 1-D array; each element is a list of coverage areas per slice
     
+    #rowRect = {}
+    #colRect = {}
     
+
+
+    def combine_slices(slices):
+        '''
+        Finds the rectangles from a set of tuples that describe 
+        '''
+        for i, slice in enumerate(rowSlices): #loop over rows
+            for j in len(row)
+        return
+    
+    return biggestPlot
 
 class rectangle:
     '''
@@ -222,3 +243,4 @@ class rectangle:
         self.width = rightCol - leftCol + 1
     
     def __add__(rect1, rect2):
+'''
