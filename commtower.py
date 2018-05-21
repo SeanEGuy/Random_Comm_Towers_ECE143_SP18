@@ -290,10 +290,15 @@ def plot_ntowers(L, W, n=0):
         else:
             pass
     
-    if n == 0:
-        return nBuilt #return towers built if not predetermined
+    if n == 0: #no number of towers given
+        assert isinstance(nBuilt, int) and nBuilt > 0
+        #The number of towers must be an integer 1 or greater
+        return nBuilt #return n towers built
     else:
-        return ( np.sum(mainPlot), np.sum(mainPlot) / float(n) )
+        ratioCovered = np.sum(mainPlot) / float(totalArea)
+        assert 0 < ratioCovered <= 1
+        #The proportion of the area covered is between 0 and 1
+        return ( np.sum(mainPlot), round(ratioCovered, 2) )
         #return tuple, number of 1s in the plot and
         #the proportion of the area they cover (decimal).
 
@@ -311,9 +316,9 @@ def sample_towerToFill(L, W, n=100):
     '''
     
     for funVars in [L, W, n]:
-    assert isinstance(funVars, int) and bool(l > 0), \
-           "%s must be a positive integer." % (funVars)
-    #All inputs must be positve integers
+        assert isinstance(funVars, int) and bool(l > 0), \
+            "%s must be a positive integer." % (funVars)
+        #All inputs must be positve integers
     
     resultCount = {} #tower counts as keys; value is times happened
     for i in range(n+1):
