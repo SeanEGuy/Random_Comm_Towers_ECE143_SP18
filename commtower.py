@@ -26,7 +26,7 @@ def plot_land(L, W):
     
     :@param W: int, horizontal dimension of plot
     :@param L: int, vertical dimension of plot
-    :@return: numpy array, int32, zeros representing no coverage
+    :@return: ndrray, int, zeros representing no coverage
     '''
     for dimension in [W, L]:
         assert isinstance(dimension, int) and bool(dimension > 0), \
@@ -49,8 +49,8 @@ def make_random_tower(plotArray):
     Generates a random rectangle representing one tower's coverage in a
     given plot of land. Ignores rules of overlapping and trimming.
     
-    :@param plotArray: numpy array, dimensions represent a plot of land
-    :@return: numpy array, plot with coverage mapped out
+    :@param plotArray: ndarray, dimensions represent a plot of land
+    :@return: ndarray, plot with coverage mapped out
     '''
     import numpy as np #used for arrays and random integers
     
@@ -102,9 +102,9 @@ def remove_overlap(towerPlot, totalPlot):
     '''
     Locate where a new tower range overlaps with pre-existing coverage.
     
-    :@param towerPlot: numpy array, coverage for a random tower
-    :@param totalPlot: numpy array, pre-existing coverage in a plot
-    :@return: numpy array, new area covered by tower
+    :@param towerPlot: ndarray, coverage for a random tower
+    :@param totalPlot: ndarray, pre-existing coverage in a plot
+    :@return: ndarray, new area covered by tower
     '''
     import numpy as np
     
@@ -245,6 +245,8 @@ def get_largest_rectangle(inPlot):
     
     assert bool(randRect.shape == inPlot.shape), "%s" % (randRect)
     #end result should still be the same dimensions as the start
+    assert (-1) not in (inPlot - randRect)
+    #ensures that newly trimmed coverage is within the original
     return randRect
 
 
@@ -289,9 +291,11 @@ def plot_ntowers(L, W, n=0):
             pass
     
     if n == 0:
-        return nBuilt
+        return nBuilt #return towers built if not predetermined
     else:
         return ( np.sum(mainPlot), np.sum(mainPlot) / float(n) )
+        #return tuple, number of 1s in the plot and
+        #the proportion of the area they cover (decimal).
 
 
 
@@ -303,12 +307,13 @@ def sample_towerToFill(L, W, n=100):
     
     :@param L: int, length dimension of the plot
     :@param W: int, width dimension of the plot
-    :@return:
+    :@return: dict, results with the number of times they occurred
     '''
     
     for funVars in [L, W, n]:
     assert isinstance(funVars, int) and bool(l > 0), \
            "%s must be a positive integer." % (funVars)
+    #All inputs must be positve integers
     
     resultCount = {} #tower counts as keys; value is times happened
     for i in range(n+1):
