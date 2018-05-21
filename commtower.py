@@ -49,7 +49,7 @@ def make_random_tower(plotArray):
     Generates a random rectangle representing one tower's coverage in a
     given plot of land. Ignores rules of overlapping and trimming.
     
-    :@param plotArray: numpy array, dimensions representing plot of land
+    :@param plotArray: numpy array, dimensions represent a plot of land
     :@return: numpy array, plot with coverage mapped out
     '''
     import numpy as np #used for arrays and random integers
@@ -246,3 +246,49 @@ def get_largest_rectangle(inPlot):
     assert bool(randRect.shape == inPlot.shape), "%s" % (randRect)
     #end result should still be the same dimensions as the start
     return randRect
+
+
+    
+def plot_ntowers(L, W, n=0):
+    '''
+    Tracks coverage as towers are randmly placed in a designated plot of
+    land. Can calculate the coverage from n towers or count the number
+    of towers required to fill the plot completely.
+    
+    :@param plotLen: int, length of the plot; stored as rows in an array
+    :@param plotWidth: int, width of plot; stored as columns in an array
+    :@param n: int, towers built; if 0, will count towers to fill.
+    :@return: tuple, total area and proportion covered
+              OR
+              int, towers built to fill plot if n=0
+    '''
+    import numpy as np
+    
+    #assert
+    
+    mainPlot = plot_land(L,W) #generate the empty plot
+    totalArea = L * W
+    
+    nBuilt = 0 #tracks number of towers built; says when to exit loop
+    finished = 0 
+    while finished == 0: #may be changed by different events to end loop
+        randTower = make_random_tower(mainPlot)
+        #generate a tower with random rectangular coverage
+        overlapFree = remove_overlap(randTower, mainPlot)
+        #remove parts of coverage already in the main plot
+        trimTower = get_largest_rectangle(overlapFree)
+        #find the largest rectangle in the remaining region
+        mainPlot += trimTower
+        #add the new coverage to the rest of the coverage
+        nBuilt += 1 #counting towers
+        if nBuilt == n and n != 0 \
+           or np.sum(mainPlot) == totalArea:
+        #checking whether its reached n-towers or filled the whole plot
+            finished += 1
+        else:
+            pass
+    
+    if n == 0:
+        return nBuilt
+    else:
+        return ( np.sum(mainPlot), np.sum(mainPlot) / float(n) )
