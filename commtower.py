@@ -292,3 +292,41 @@ def plot_ntowers(L, W, n=0):
         return nBuilt
     else:
         return ( np.sum(mainPlot), np.sum(mainPlot) / float(n) )
+
+
+
+def sample_towerToFill(L, W, n=100):
+    '''
+    To estimate the number of towers needed to fill a plot of land, this
+    function simulates the process of filling a plot up for n
+    repetitions.
+    
+    :@param L: int, length dimension of the plot
+    :@param W: int, width dimension of the plot
+    :@return:
+    '''
+    
+    for funVars in [L, W, n]:
+    assert isinstance(funVars, int) and bool(l > 0), \
+           "%s must be a positive integer." % (funVars)
+    
+    resultCount = {} #tower counts as keys; value is times happened
+    for i in range(n+1):
+        ntowers = plot_ntowers(L, W, n=0)
+        #simulates event; returns number of towers to fill
+        if ntowers in resultCount:
+            resultCount[ntowers] += 1
+            #adds to tally for that result
+        else:
+            resultCount[ntowers] = 1
+            #creates entry for new results
+    
+    reCount = 0
+    for result in resultCount:
+        reCount += resultCount[result]
+        #getting total number of events captures
+    assert bool(reCount == n)
+    #checking that the desired number of simulations was captured
+    
+    return resultCount
+        
