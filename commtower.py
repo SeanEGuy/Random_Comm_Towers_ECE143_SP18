@@ -47,10 +47,27 @@ def plot_land(L, W):
 def make_random_tower(plotArray):
     '''
     Generates a random rectangle representing one tower's coverage in a
-    given plot of land. Ignores rules of overlapping and trimming.
+    given plot of land. Does not deal with overlapping and trimming.
+    
+    Numpy module must be available. Asserts that the input is a
+    two-dimensional numpy array after importing numpy.
+    
+    Grabs the dimensions of the array and stores in L and w. Using
+    randint, two indices per dimensions are chosen. These are sorted and
+    combined in a tuple that describes the ranges, inclusive, in which
+    the final rectangle will be.
+    
+    An array of the same dimensions as the input is generated. It is
+    made iterable by np.nditer(). By iterating element-wise and
+    comparing each element's row and column indices to the rectangle
+    ranges, the function finds the nodes that should be ones and
+    leaves the remainder as zeros.
+    
+    The output array is checked for correct dimensions and whether it
+    only contains zeros and ones. It is then returned as the output.
     
     :@param plotArray: ndarray, dimensions represent a plot of land
-    :@return: ndarray, plot with coverage mapped out
+    :@return: ndarray, plot with random coverage rectangle mapped out
     '''
     import numpy as np #used for arrays and random integers
     
@@ -101,6 +118,23 @@ def make_random_tower(plotArray):
 def remove_overlap(towerPlot, totalPlot):
     '''
     Locate where a new tower range overlaps with pre-existing coverage.
+    Imports numpy and asserts that inputs are numpy arrays of the same
+    dimensions. It then checks whether only zeros or ones are in the
+    arrays.
+    
+    Numpy module must be available to function.
+    
+    If totalPlot, the pre-existing coverage, only has zeros, the tower
+    plot is simply returned. Otherwise, the function continues to
+    combining both input plots. The tower plot is multiplied by 2 and
+    added to the pre-existing coverage. Thus, values of 2 in the
+    new layerPlot indicate coverage from the tower that does not
+    overlap with the pre-existing coverage.
+    
+    To generate the output, the function iterates element-wise over the
+    layerPlot and replaces 2's with one and everything else with zero.
+    This output is checked such that its dimensions are the same as the
+    inputs and its coverage does not exceed that of the tower input.
     
     :@param towerPlot: ndarray, coverage for a random tower
     :@param totalPlot: ndarray, pre-existing coverage in a plot
@@ -155,6 +189,36 @@ def get_largest_rectangle(inPlot):
     coverage has already been trimmed for overlap with pre-existing
     towers.
     
+    Module numpy must be available to function.
+    
+    First import numpy and check that the input plot is a numpy array
+    containing only ones or zeros. Second define a method to create
+    rectangles starting from a single point and extending out to the
+    limits of coverage.
+    
+    Looping through each element in the input plot, each one is checked
+    for being either zero or one. Zero values are ignored. Ones have
+    their row and column indices fed into the encapsulated function
+    along with the input plot, yielding a plot with rectangular coverage
+    that is stored in a holding list. The function is called again on
+    transposition of the input and indices to yield another rectangle
+    from that corener.
+    
+    If the list of rectangles ends up empty, an empty array is returned
+    as the final output. Otherwise, the rectangle with the maximum array
+    sum is identified using a lambda argument insied of max().
+    
+    To find rectangles that may have the same area, the rectangle
+    candidate list is looped over, this time comparing each item's
+    sum to the one picked out. If multiple plots have the same area,
+    one is chosen randomly by generating a random integer index from
+    a uniform distribution.
+    
+    This output is checked so that its dimensions match the output and
+    that its locations of ones is a subset of the input file's
+    locations. This array of the trimmed, rectangular coverage is
+    finally returned as the output.
+    
     :@param inPlot: ndarray, original non-overlapping coverage
     :@return: ndarray, largest rectangular coverage from inPlot
     '''
@@ -171,6 +235,26 @@ def get_largest_rectangle(inPlot):
         Given a starting point, generate one rectangle sweeping right
         then down and another sweeping down then right until they reach
         the boundary of coverage.
+        
+        The inputs designate the upper-left corner of the rectangular
+        coverage. Plot dimensions are saved from thePlot (same as
+        inPlot from the outer function). Ending row and column are
+        initially the same as the starting ones.
+        
+        The function loops through columns indices, checking which
+        elements on the same row also contain ones and thus are part of
+        the coverage. Then the function sweeps down, checking its slice
+        of row for zero values. The last indices are saved as the last
+        row and column.
+        
+        A new plot is created. It is populated by zeros and ones by
+        iterating over each element and checking whether its indices
+        fall within the deteermined coverage rectangle. Coverage means
+        one and no coverage is zero.
+        
+        If transposed is true, the function transposes result before
+        returning it as a result. Otherwise the function simply returns
+        in its current state.
         
         :@param inPlot: ndarray, original non-overlapping coverage
         :@param r1: int, row index to start from
@@ -277,6 +361,28 @@ def plot_ntowers(L, W, n=0):
     land. Can calculate the coverage from n towers or count the number
     of towers required to fill the plot completely.
     
+    Numpy module must be available to function.
+    
+    Dimensions are checked to be postive integers. Same for n, except it
+    may equal zero.
+    
+    It then creates an empty plot to be filled with towers. The loop
+    goes through making a tower, removing its overlap with other
+    coverages, trimming back into a rectangle, adding the coverage
+    into the main plot, and tracking the number of towers built.
+    
+    The loop ends if the plot is completely covered or if input n is
+    non-zero and that many towers have been built.
+    
+    Asserts that the number of towers counted is a positive integer
+    value. Also checks that the proportion of the total plot covered
+    is greater than zero and less than or equal to one.
+    
+    n is zero, then the number of towers used to fill the plot is
+    returned as the output. Otherwise, the area covered--found by
+    taking the sum of the main plot array--and the proportion of total
+    area covered is returned inside a two-element tuple.
+    
     :@param plotLen: int, length of the plot; stored as rows in an array
     :@param plotWidth: int, width of plot; stored as columns in an array
     :@param n: int, towers built; if 0, will count towers to fill.
@@ -336,6 +442,13 @@ def sample_towersToFill(L, W, n=100):
     To estimate the number of towers needed to fill a plot of land, this
     function simulates the process of filling a plot up for n
     repetitions.
+    
+    Asserts that all inputs are positive integers, then runs a loop for
+    n iterations collecting the number of towers used each time a plot
+    is filled. These results are stored as a list of integers.
+    
+    Before returning the results in a list, the list is checked for
+    appropriate length n and content (integers only).
     
     :@param L: int, length dimension of the plot
     :@param W: int, width dimension of the plot
