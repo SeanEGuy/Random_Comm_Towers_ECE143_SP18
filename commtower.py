@@ -226,7 +226,7 @@ def get_largest_rectangle(inPlot):
     
     assert isinstance(inPlot, np.ndarray), \
            "Input must be a numpy array"
-    for coord in np.nditer(totalPlot): #loop thorugh each element
+    for coord in np.nditer(inPlot): #loop thorugh each element
         assert bool(coord == 0 or coord == 1), \
                "Input array may only contain 0s or 1s"
     
@@ -297,7 +297,7 @@ def get_largest_rectangle(inPlot):
         
         assert outPlot.shape == thePlot.shape
         #should generate a plot with the same shape as input
-        assert np.sum(outPlot) =< np.sum(thePlot)
+        assert np.sum(outPlot) <= np.sum(thePlot)
         #total coverage of output can't be more than input
         
         if transposed == True: #if input transposed before
