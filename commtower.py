@@ -156,13 +156,15 @@ def get_largest_rectangle(inPlot):
     towers.
     
     :@param inPlot: ndarray, original non-overlapping coverage
-    :@return: ndarray, larest rectangular coverage from inPlot
+    :@return: ndarray, largest rectangular coverage from inPlot
     '''
     import numpy as np
     
-    #asserts go here
-    
-    rectList = [] #store arrays representing rectangles of coverage
+    assert isinstance(inPlot, np.ndarray), \
+           "Input must be a numpy array"
+    for coord in np.nditer(totalPlot): #loop thorugh each element
+        assert bool(coord == 0 or coord == 1), \
+               "Input array may only contain 0s or 1s"
     
     def sweep_from_corner(thePlot, r1, c1,transposed=False):
         '''
@@ -174,6 +176,7 @@ def get_largest_rectangle(inPlot):
         :@param r1: int, row index to start from
         :@param c1: int, col index to start from
         :@param transposed: bool, whether the input was transposed
+        :@return: ndarray, plotted largest rectangle from r1,c1
         '''
         
         length, width = thePlot.shape #dimensions as easy to read vars
@@ -192,7 +195,7 @@ def get_largest_rectangle(inPlot):
             if 0 not in thePlot[j][c1:c2+1]:
             #check for zeros in each row; the first should never fail
                 r2 = j #save the index of last successful row
-            else: #Do nothing for rows with 1
+            else: #Stop when reaches a row with 0
                 break
         
         outPlot = thePlot * 0 #new plot to add the new rectangle
@@ -208,10 +211,18 @@ def get_largest_rectangle(inPlot):
                 pass
             iterOut.iternext()
         
-        if transposed == True:
+        assert outPlot.shape == thePlot.shape
+        #should generate a plot with the same shape as input
+        assert np.sum(outPlot) =< np.sum(thePlot)
+        #total coverage of output can't be more than input
+        
+        if transposed == True: #if input transposed before
             return np.transpose(outPlot)
+            #transpose plot to return to original orientation
         else:
-            return outPlot
+            return outPlot #return detected subset of coverage
+    
+    rectList = [] #store arrays representing rectangles of coverage
     
     itPlot = np.nditer(inPlot, flags=['multi_index'])
     #make an iterable for inPlot with indices available
@@ -275,7 +286,12 @@ def plot_ntowers(L, W, n=0):
     '''
     import numpy as np
     
-    #assert
+    assert isinstance(L, int) and L > 0, \
+           "Length must be a positive integer."
+    assert isinstance(W, int) and W > 0, \
+           "Width must be a positive integer."
+    assert isinstance(n, int) and n >= 0, \
+           "n must be an integer and > or = 0"
     
     mainPlot = plot_land(L,W) #generate the empty plot
     totalArea = L * W
@@ -299,15 +315,17 @@ def plot_ntowers(L, W, n=0):
         else:
             pass
     
+    assert isinstance(nBuilt, int) and nBuilt > 0
+    #The number of towers must be an integer 1 or greater
+    ratioCovered = np.sum(mainPlot) / float(totalArea)
+    assert 0 < ratioCovered <= 1
+    #The proportion of the area covered is between 0 and 1
+    
+    
     if n == 0: #no number of towers given
-        assert isinstance(nBuilt, int) and nBuilt > 0
-        #The number of towers must be an integer 1 or greater
         return nBuilt #return n towers built
     else:
-        ratioCovered = np.sum(mainPlot) / float(totalArea)
-        assert 0 < ratioCovered <= 1
-        #The proportion of the area covered is between 0 and 1
-        return ( np.sum(mainPlot), round(ratioCovered, 2) )
+        return ( np.sum(mainPlot), round(ratioCovered, 3) )
         #return tuple, number of 1s in the plot and
         #the proportion of the area they cover (decimal).
 
